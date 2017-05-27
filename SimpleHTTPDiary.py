@@ -68,7 +68,6 @@ class DiaryAction(Resource):
         result = Search(title, desc, start, end)
         if not isinstance(result, types.ListType):
             return result
-
         return result
 
 
@@ -174,9 +173,6 @@ if __name__ == "__main__":
 '''POST unit tests'''
 # Add new entry - check added (out + dict)
 # Add unique id increment check + check all records have unique id after multiple operations
-# Ommit intrinsic parameters/supply wrong parameters
-# Supply invalid date values (e.g. 99-99-99, 01-01-99, !@#$%^&*)
-# Check for empty titles/descs in records
 
 '''GET unit tests'''
 # Get single existing entry - key/value correlate each other correctly including content
