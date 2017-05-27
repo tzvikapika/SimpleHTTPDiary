@@ -1,77 +1,107 @@
 import datetime
+import types
 from flask import Flask
 from flask import request
 from flask_restful import Api
 from flask_restful import Resource
 
-
 app = Flask(__name__)
 api = Api(app)
 
-record_id = 0
 diary = list(dict())
 
+def Search(title = None, desc = None, start = None, end = None):
+    if title is None and desc is None and start is None and end is None: # No-arguments check
+        return "Insufficient Input, <title> <desc> or/and <start> <end> expected"
+    if (title is not None and title == "") or (desc is not None and desc == ""): # title/desc can't be empty
+        return "Invalid Input, <title> <desc> can not be empty"
+    if (title is None and desc is not None) or (title is not None and desc is None): # title and desc always paired
+        return "Insufficient Input, <title> <desc> expected"
+    if (start is None and end is not None) or (start is not None and end is None): # start and end always paired
+        return "Insufficient Input, <start> <end> expected"
+
+    recordsByDesc = list(dict())
+    if desc is not None:
+        for rec in diary:
+            recTitle = rec['title']
+            recDesc = rec['desc']
+            if str(title).lower() in str(recTitle).lower() and str(desc).lower() in str(recDesc).lower():
+                recordsByDesc.append(rec)
+
+    recordsByDate = list(dict())
+    if start is not None and end is not None:
+        try:
+            dt1 = datetime.datetime.strptime(start, "%d-%m-%Y").date()
+            dt2 = datetime.datetime.strptime(end, "%d-%m-%Y").date()
+        except ValueError as ex:
+            return str(ex)
+
+        if dt1 > dt2:
+            return "Start date can not be greater than End date"
+
+        for rec in diary:
+            recDate = datetime.datetime.strptime(dict(rec)['date'], "%d-%m-%Y").date()
+            if recDate >= dt1 and recDate <= dt2:
+                recordsByDate.append(rec)
+
+    if title is not None and desc is not None and start is not None and end is not None:
+        commonRecords = list(dict())
+        for rec in recordsByDesc:
+            if rec in recordsByDate:
+                commonRecords.append(rec)
+        return commonRecords
+    elif title is not None and desc is not None:
+        return recordsByDesc
+    else:
+        return recordsByDate
+
+
 class DiaryAction(Resource):
-    def get(self):
+    def get(self): # Get a list of events by title-desc or/and date range
+        title = request.form.get('title')
         desc = request.form.get('desc')
         start = request.form.get('start')
         end = request.form.get('end')
 
-        if desc is None and start is None and end is None:
-            return "Insufficient Input, <desc> or/and <start> <end> expected"
-        if desc is not None and desc == "":
-            return "Invalid Input, <desc> can not be empty"
-        if start is None and end is not None:
-            return "Insufficient Input, <start> expected"
-        if start is not None and end is None:
-            return "Insufficient Input, <end> expected"
+        result = Search(title, desc, start, end)
+        if not isinstance(result, types.ListType):
+            return result
 
-        recordsByDesc = list(dict())
-        if desc is not None:
-            for rec in diary:
-                recDesc = rec['desc']
-                if desc in recDesc: # TODO: the comparison is case sensitive, needs fix
-                    recordsByDesc.append(rec)
-
-        recordsByDate = list(dict())
-        if start is not None and end is not None:
-            try:
-                dt1 = datetime.datetime.strptime(start, "%d-%m-%Y").date()
-                dt2 = datetime.datetime.strptime(end, "%d-%m-%Y").date()
-            except ValueError as ex:
-                return str(ex)
-
-            if dt1 > dt2:
-                return "Start date can not be greater than End date"
-
-            for rec in diary:
-                recDate = datetime.datetime.strptime(dict(rec)['date'], "%d-%m-%Y").date()
-                if recDate >= dt1 and recDate <= dt2:
-                    recordsByDate.append(rec)
-
-        if desc is not None and start is not None and end is not None:
-            commonRecords = list(dict())
-            for rec in recordsByDesc:
-                if rec in recordsByDate:
-                    commonRecords.append(rec)
-            return commonRecords
-        elif desc is not None:
-            return recordsByDesc
-        else:
-            return recordsByDate
+        return result
 
 
-    def put(self):
-        
-        pass
+    def put(self): # Update events by title-desc or/and date range
+        title = request.form.get('title')
+        desc = request.form.get('desc')
+        start = request.form.get('start')
+        end = request.form.get('end')
+
+        newTitle = request.form.get('newTitle')
+        newDesc = request.form.get('newDesc')
+
+        if newTitle is None and newDesc is None:
+            return "Insufficient Input, <newTitle> or/and <newDesc> expected"
+        if (newTitle is not None and newTitle == "") or (newDesc is not None and newDesc == ""):
+            return "Invalid Input, <newTitle> <newDesc> can not be empty"
+
+        result = Search(title, desc, start, end)
+        if not isinstance(result, types.ListType):
+            return result
+
+        for rec in result:
+            if newTitle is not None:
+                rec['title'] = newTitle
+            if newDesc is not None:
+                rec['desc'] = newDesc
+        return result
 
 
-    def post(self):
+    def post(self): # Add new events with date, title and desc
         date = request.form.get('date')
         title = request.form.get('title')
         desc = request.form.get('desc')
 
-        if date is None or title is None or desc is None:
+        if date is None or title is None or desc is None: # Mandatory args check
             return "Insufficient Input, <date> <title> <desc> expected"
         if title == "" or desc == "":
             return "Invalid Input, <title> <desc> can not be empty"
@@ -82,22 +112,29 @@ class DiaryAction(Resource):
         except ValueError as ex:
             return str(ex)
 
-        global record_id
-        diary.append({"id":record_id, "date":date, "title":title, "desc":desc})
-        record_id += 1
-        return "\nAdded new entry"
+        diary.append({"date":date, "title":title, "desc":desc})
+        return "Added new entry"
 
 
-    def delete(self):
-        data = request.form.get('date')
-        pass
+    def delete(self): # Delete events by title-desc or/and date range
+        title = request.form.get('title')
+        desc = request.form.get('desc')
+        start = request.form.get('start')
+        end = request.form.get('end')
 
+        result = Search(title, desc, start, end)
+        if not isinstance(result, types.ListType):
+            return result
+
+        for rec in result:
+            diary.remove(rec)
+        return result
 
 class DiaryBackup(Resource):
-    def get(self):
+    def get(self): # Save back to file
         pass
 
-    def post(self):
+    def post(self): # Load backup from file
         pass
 
 api.add_resource(DiaryAction, '/action')
@@ -108,11 +145,11 @@ if __name__ == "__main__":
 
 
 '''Usage'''
-# curl http://127.0.0.1:5000/action -d "desc=" -d "start=" -d "end=" -X GET
-# curl http://127.0.0.1:5000/action -d "desc=" -X GET
-# curl http://127.0.0.1:5000/action -d "start=" -d "end=" -X GET
+# curl http://127.0.0.1:5000/action -d "title=XXX" -d "desc=YYY" -d "start=1-1-1900" -d "end=31-12-9999" -X GET/PUT/DELETE
+# curl http://127.0.0.1:5000/action -d "title=XXX" -d "desc=YYY" -X GET/PUT/DELETE
+# curl http://127.0.0.1:5000/action -d "start=1-1-1900" -d "end=31-12-9999" -X GET/PUT/DELETE
 
-# curl http://127.0.0.1:5000/action -d "date=" -d "title=" -d "desc=" -X POST
+# curl http://127.0.0.1:5000/action -d "title=" -d "desc=" -d "date=" -X POST
 
 '''Setup'''
 # Check for data structure
@@ -142,7 +179,12 @@ if __name__ == "__main__":
 
 '''PUT unit tests'''
 # Check for empty titles/descs in records
+# Reconrd cnt after update
+# Target records update sucess
 
+"""DELETE"""
+# Selected records deleted
+# Non selected records are intact
 
 '''Teardown'''
 # Save results
