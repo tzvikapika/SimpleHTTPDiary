@@ -19,6 +19,8 @@ class DiaryAction(Resource):
 
         if desc is None and start is None and end is None:
             return "Insufficient Input, <desc> or/and <start> <end> expected"
+        if desc is not None and desc == "":
+            return "Invalid Input, <desc> can not be empty"
         if start is None and end is not None:
             return "Insufficient Input, <start> expected"
         if start is not None and end is None:
@@ -27,7 +29,8 @@ class DiaryAction(Resource):
         recordsByDesc = list(dict())
         if desc is not None:
             for rec in diary:
-                if desc in str(dict(rec)['desc']): # TODO: BUG - empty string always found as match in a record ("")
+                recDesc = rec['desc']
+                if desc in recDesc: # TODO: the comparison is case sensitive, needs fix
                     recordsByDesc.append(rec)
 
         recordsByDate = list(dict())
@@ -51,14 +54,17 @@ class DiaryAction(Resource):
             for rec in recordsByDesc:
                 if rec in recordsByDate:
                     commonRecords.append(rec)
+            return commonRecords
         elif desc is not None:
             return recordsByDesc
         else:
             return recordsByDate
-        return commonRecords
+
 
     def put(self):
+        
         pass
+
 
     def post(self):
         date = request.form.get('date')
@@ -67,7 +73,9 @@ class DiaryAction(Resource):
 
         if date is None or title is None or desc is None:
             return "Insufficient Input, <date> <title> <desc> expected"
-        # TODO: Add check for empty title/desc strings
+        if title == "" or desc == "":
+            return "Invalid Input, <title> <desc> can not be empty"
+
         try:
             dt = datetime.datetime.strptime(date, "%d-%m-%Y").date()
             date = dt.strftime("%d-%m-%Y")
@@ -78,6 +86,7 @@ class DiaryAction(Resource):
         diary.append({"id":record_id, "date":date, "title":title, "desc":desc})
         record_id += 1
         return "\nAdded new entry"
+
 
     def delete(self):
         data = request.form.get('date')
@@ -126,8 +135,10 @@ if __name__ == "__main__":
 # Serach only by desc
 # Search only by date
 # search by desc and date
-# Supply invalid date values (e.g. 99-99-99, 01-01-99, !@#$%^&*)
+# Supply invalid date values (e.g. 99-99-99, 01-01-99, 1-1-20000 !@#$%^&*)
 # Supply invalid date ranges (start > end)
+# Supply desc as empty string
+# Test search with case sensitive description (if case affects the search results)
 
 '''PUT unit tests'''
 # Check for empty titles/descs in records
