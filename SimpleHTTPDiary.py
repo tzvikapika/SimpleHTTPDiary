@@ -1,5 +1,6 @@
 import datetime
 import types
+import json
 from flask import Flask
 from flask import request
 from flask_restful import Api
@@ -9,6 +10,7 @@ app = Flask(__name__)
 api = Api(app)
 
 diary = list(dict())
+BACKUP_FILE = "./diaryBackup"
 
 def Search(title = None, desc = None, start = None, end = None):
     if title is None and desc is None and start is None and end is None: # No-arguments check
@@ -131,11 +133,24 @@ class DiaryAction(Resource):
         return result
 
 class DiaryBackup(Resource):
-    def get(self): # Save back to file
-        pass
+    def get(self): # Save backup to file
+        global diary
+        fp = open(BACKUP_FILE, "w")
+        json.dump(diary, fp)
+        fp.close()
+        return "Backup saved"
 
     def post(self): # Load backup from file
-        pass
+        global diary
+
+        try:
+            fp = open(BACKUP_FILE, "r")
+        except IOError as ex:
+            return str(ex)
+
+        diary = json.load(fp)
+        fp.close()
+        return "Backup loaded"
 
 api.add_resource(DiaryAction, '/action')
 api.add_resource(DiaryBackup, '/backup')
