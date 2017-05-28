@@ -35,6 +35,9 @@ def Search(title = None, desc = None, start = None, end = None):
         try:
             dt1 = datetime.datetime.strptime(start, "%d-%m-%Y").date()
             dt2 = datetime.datetime.strptime(end, "%d-%m-%Y").date()
+            # Test for dates less than year 1900
+            dt1.strftime("%d-%m-%Y")
+            dt2.strftime("%d-%m-%Y")
         except ValueError as ex:
             return str(ex)
 
@@ -68,7 +71,11 @@ class DiaryAction(Resource):
         result = Search(title, desc, start, end)
         if not isinstance(result, types.ListType):
             return result
-        return result
+
+        if(len(result) == 0):
+            return "No entries found"
+        else:
+            return result
 
 
     def put(self): # Update events by title-desc or/and date range
@@ -88,6 +95,9 @@ class DiaryAction(Resource):
         result = Search(title, desc, start, end)
         if not isinstance(result, types.ListType):
             return result
+
+        if (len(result) == 0):
+            return "No entries found"
 
         for rec in result:
             if newTitle is not None:
@@ -126,6 +136,9 @@ class DiaryAction(Resource):
         result = Search(title, desc, start, end)
         if not isinstance(result, types.ListType):
             return result
+
+        if (len(result) == 0):
+            return "No entries found"
 
         for rec in result:
             diary.remove(rec)
