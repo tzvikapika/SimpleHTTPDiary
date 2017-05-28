@@ -19,7 +19,6 @@ class SimpleHTTPDiary_Tests(unittest.TestCase):
     def setUp(self):
         SimpleHTTPDiary.app.config['TESTING'] = True
         self.app = SimpleHTTPDiary.app.test_client()
-        SimpleHTTPDiary.app.test_client()
         print self.id()
 
     def tearDown(self):
@@ -76,24 +75,53 @@ class SimpleHTTPDiary_Tests(unittest.TestCase):
         self.assertTrue(len(SimpleHTTPDiary.diary) == 1)
 
     def test_addRecord_newEntry_maxDate(self):
-        newRec = {"date":"31-12-9999", "title":"someTitle2", "desc":"someDesc2"}
+        newRec = {"date":"31-12-9999", "title":"someTitle1", "desc":"someDesc1"}
         response = self.app.post("/action", data=newRec)
         self.assertTrue("Added new entry" in response.data)
         self.assertTrue(SimpleHTTPDiary.diary[0]["date"] == "31-12-9999" and
-                        SimpleHTTPDiary.diary[0]["title"] == "someTitle2" and
-                        SimpleHTTPDiary.diary[0]["desc"] == "someDesc2")
+                        SimpleHTTPDiary.diary[0]["title"] == "someTitle1" and
+                        SimpleHTTPDiary.diary[0]["desc"] == "someDesc1")
         self.assertTrue(len(SimpleHTTPDiary.diary) == 1)
 
-    ########################## Tests for diary records Search functionality (Common to GET/PUT/DELETE) ##########################
-    def test_searchRecords_xyz(self):
+    ########################## Tests for displaying existing diary records functionality ##########################
+    def test_displayRecords_no_args(self):
+        requestData = {}
+        response = self.app.get("/action", data=requestData)
+        self.assertTrue("Insufficient Input, <title> <desc> or/and <start> <end> expected" in response.data)
+
+    def test_displayRecords_empty_title(self):
+        requestData = {"title": "", "desc": "someDesc1"}
+        response = self.app.get("/action", data=requestData)
+        self.assertTrue("Invalid Input, <title> <desc> can not be empty" in response.data)
+
+    def test_displayRecords_empty_desc(self):
+        requestData = {"title": "someTitle1", "desc": ""}
+        response = self.app.get("/action", data=requestData)
+        self.assertTrue("Invalid Input, <title> <desc> can not be empty" in response.data)
+
+    def test_displayRecords_missing_title(self):
+        requestData = {"desc": "someDesc1"}
+        response = self.app.get("/action", data=requestData)
+        self.assertTrue("Insufficient Input, <title> <desc> expected" in response.data)
+
+    def test_displayRecords_missing_desc(self):
+        requestData = {"title": "someTitle1"}
+        response = self.app.get("/action", data=requestData)
+        self.assertTrue("Insufficient Input, <title> <desc> expected" in response.data)
+
+    def test_addRecord_invalid_start_date_format(self):
+        pass
+    def test_addRecord_invalid_start_date_length(self):
+        pass
+    def test_addRecord_invalid_end_date_format(self):
+        pass
+    def test_addRecord_invalid_end_date_length(self):
+        pass
+    def test_addRecord_date_start_greater_than_end(self):
         pass
 
     ########################## Tests for updating existing diary records functionality ##########################
     def test_updateRecords_xyz(self):
-        pass
-
-    ########################## Tests for displaying existing diary records functionality ##########################
-    def test_displayRecords_xyz(self):
         pass
 
     ########################## Tests for deleting existing diary records functionality ##########################
@@ -111,7 +139,7 @@ class SimpleHTTPDiary_Tests(unittest.TestCase):
 if __name__ == '__main__':
     unittest.main()
 
-# TODO: Test the diary's Search method directly (mostly invalid inputs and error detection) to avoid tests ambiguity with different actions, Search is common to GET/PUT/DELETE actions
+
 # TODO: Integrate sendHttpRequest() method
 # TODO: Implement test response data output / logger
 # TODO: Implement common assert function with extended functionality
