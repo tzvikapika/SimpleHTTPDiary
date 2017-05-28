@@ -23,7 +23,7 @@ def Search(title = None, desc = None, start = None, end = None):
         return "Insufficient Input, <start> <end> expected"
 
     recordsByDesc = list(dict())
-    if desc is not None:
+    if title is not None and desc is not None:
         for rec in diary:
             recTitle = rec['title']
             recDesc = rec['desc']
@@ -170,10 +170,6 @@ if __name__ == "__main__":
 # Check for initialized ID counter
 # Check for accessible local filesystem
 
-'''POST unit tests'''
-# Add new entry - check added (out + dict)
-# Add unique id increment check + check all records have unique id after multiple operations
-
 '''GET unit tests'''
 # Get single existing entry - key/value correlate each other correctly including content
 # Get multiple entries by range of dates, check correct count of records
@@ -201,7 +197,5 @@ if __name__ == "__main__":
 # Save results
 # Tests residue cleanup
 # Dispose of resources
-
-
 
 # Make full use cases if time is left
