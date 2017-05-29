@@ -1,28 +1,19 @@
 import unittest
 import SimpleHTTPDiary
+import json
+import sys
 
 class SimpleHTTPDiary_Tests(unittest.TestCase):
-    def sendHttpRequest(self, api='/action', dataDict=dict(), method='GET'): # TODO: Integrate in tests
-        resp = None
-        if method == 'GET':
-            resp = self.app.get(api, data=dataDict)
-        if method == 'POST':
-            resp = self.app.post(api, data=dataDict)
-        if method == 'PUT':
-            resp = self.app.put(api, data=dataDict)
-        if method == 'DELETE':
-            resp = self.app.delete(api, data=dataDict)
-        self.assertTrue(resp.status == '200 OK', msg=resp.status)
-        print str(resp)
-        return resp.data
-
     def initAppData(self):
-        SimpleHTTPDiary.diary.append({"date": "01-01-1900", "title": "someTitle1", "desc": "someDesc1"})
-        SimpleHTTPDiary.diary.append({"date": "31-12-9999", "title": "someTitle2", "desc": "someDesc2"})
-        SimpleHTTPDiary.diary.append({"date": "11-03-2001", "title": "someTitle3", "desc": "someDesc3"})
-        SimpleHTTPDiary.diary.append({"date": "23-07-2001", "title": "someTitle4", "desc": "someDesc4"})
-        SimpleHTTPDiary.diary.append({"date": "10-07-2001", "title": "someTitle5", "desc": "someDesc5"})
-        SimpleHTTPDiary.diary.append({"date": "07-10-2010", "title": "someTitle6", "desc": "someDesc6"})
+        SimpleHTTPDiary.diary.append({"date": "01-01-1900", "title": "niceTitle", "desc": "longDesc"})
+        SimpleHTTPDiary.diary.append({"date": "31-12-9999", "title": "bigTitle",  "desc": "someDesc"})
+        SimpleHTTPDiary.diary.append({"date": "11-03-2001", "title": "someTitle", "desc": "shortDesc"})
+        SimpleHTTPDiary.diary.append({"date": "23-07-2001", "title": "niceTitle", "desc": "someDesc"})
+        SimpleHTTPDiary.diary.append({"date": "10-07-2001", "title": "bigTitle",  "desc": "longDesc"})
+        SimpleHTTPDiary.diary.append({"date": "07-10-2010", "title": "bigTitle",  "desc": "someDesc"})
+        # Convert to unicode
+        jsonStr = json.dumps(SimpleHTTPDiary.diary)
+        SimpleHTTPDiary.diary = json.loads(jsonStr)
 
     def setUp(self):
         SimpleHTTPDiary.app.config['TESTING'] = True
@@ -31,7 +22,11 @@ class SimpleHTTPDiary_Tests(unittest.TestCase):
 
     def tearDown(self):
         del SimpleHTTPDiary.diary[:]
-
+        inf = sys.exc_info()
+        if inf[0] is None and inf[1] is None and inf[2] is None:
+            print "[TEST PASSED]\n"
+        else:
+            print "[TEST FAILED]\n"
 
     ########################## Tests for adding new diary records functionality ##########################
     def test_addRecord_missing_date(self):
@@ -167,27 +162,45 @@ class SimpleHTTPDiary_Tests(unittest.TestCase):
 
     def test_displayRecords_by_title_desc(self):
         self.initAppData()
-        pass
+        requestData = {"title": "big", "desc": "Desc"}
+        response = self.app.get("/action", data=requestData)
+        responseDecoded = json.loads(response.data)
+        print "{0}{1}".format("'GET' RESULT:\n", json.dumps(responseDecoded, indent=4))
+        self.assertTrue(len(responseDecoded) == 3)
 
     def test_displayRecords_by_start_end(self):
-        pass
+        self.initAppData()
+        requestData = {"start": "1-1-1900", "end": "31-12-9999"}
+        response = self.app.get("/action", data=requestData)
+        responseDecoded = json.loads(response.data)
+        print "{0}{1}".format("'GET' RESULT:\n", json.dumps(responseDecoded, indent=4))
+        self.assertTrue(len(responseDecoded) == 6)
 
     def test_displayRecords_by_title_desc_start_end(self):
-        pass
-
+        self.initAppData()
+        requestData = {"start": "1-3-2001", "end": "21-7-2002", "title": "nice", "desc": "some"}
+        response = self.app.get("/action", data=requestData)
+        responseDecoded = json.loads(response.data)
+        print "{0}{1}".format("'GET' RESULT:\n", json.dumps(responseDecoded, indent=4))
+        self.assertTrue(len(responseDecoded) == 1)
 
     ########################## Tests for updating existing diary records functionality ##########################
-    def test_updateRecords_xyz(self):
+    def test_updateRecords_by_title_desc(self):
         pass
-
+    def test_updateRecords_by_start_end(self):
+        pass
+    def test_updateRecords_by_title_desc_start_end(self):
+        pass
     ########################## Tests for deleting existing diary records functionality ##########################
-    def test_deleteRecords_xyz(self):
+    def test_deleteRecords_title_desc(self):
         pass
-
+    def test_deleteRecords_start_end(self):
+        pass
+    def test_deleteRecords_title_desc_start_end(self):
+        pass
     ########################## Tests for saving diary backup ##########################
     def test_saveRecordsBackup_xyz(self):
         pass
-
     ########################## Tests for loading diary from backup ##########################
     def test_loadRecordsBackup_xyz(self):
         pass
@@ -195,7 +208,3 @@ class SimpleHTTPDiary_Tests(unittest.TestCase):
 if __name__ == '__main__':
     unittest.main()
 
-
-# TODO: Integrate sendHttpRequest() method
-# TODO: Implement test response data output / logger
-# TODO: Implement common assert function with extended functionality
