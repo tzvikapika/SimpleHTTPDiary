@@ -176,44 +176,34 @@ if __name__ == "__main__":
     app.run(debug=True)
 
 
-'''Usage'''
-# curl http://127.0.0.1:5000/action -d "title=XXX" -d "desc=YYY" -d "start=1-1-1900" -d "end=31-12-9999" -X GET/PUT/DELETE
-# curl http://127.0.0.1:5000/action -d "title=XXX" -d "desc=YYY" -X GET/PUT/DELETE
-# curl http://127.0.0.1:5000/action -d "start=1-1-1900" -d "end=31-12-9999" -X GET/PUT/DELETE
+'''Usage - Diary Actions'''
+## POST - Add new record
+## GET - Search records by title/description and/or dates range
+## PUT - Update records by title/desc and/or dates range with new title and/or description
+## DELETE - Delete records by title/description and/or dates range
 
-# curl http://127.0.0.1:5000/action -d "title=" -d "desc=" -d "date=" -X POST
+# curl http://127.0.0.1:5000/action -d "title=XXX" -d "desc=YYY" -d "date=d/m/yyyy" -X POST
 
-'''Setup'''
-# Check for data structure
-# Check for initialized ID counter
-# Check for accessible local filesystem
+# curl http://127.0.0.1:5000/action -d "title=XXX" -d "desc=YYY" -d "start=1-1-1900" -d "end=31-12-9999" -X GET/DELETE
+# curl http://127.0.0.1:5000/action -d "title=XXX" -d "desc=YYY" -X GET/DELETE
+# curl http://127.0.0.1:5000/action -d "start=1-1-1900" -d "end=31-12-9999" -X GET/DELETE
 
-'''GET unit tests'''
-# Get single existing entry - key/value correlate each other correctly including content
-# Get multiple entries by range of dates, check correct count of records
-# Get single entry that doesn't exist
-# Get range of entries that don't exist
-# Ommit intrinsic parameters/supply wrong parameters + Ommit all parameters
-# Serach only by desc
-# Search only by date
-# search by desc and date
-# Supply invalid date values (e.g. 99-99-99, 01-01-99, 1-1-20000 !@#$%^&*)
-# Supply invalid date ranges (start > end)
-# Supply desc as empty string
-# Test search with case sensitive description (if case affects the search results)
+# curl http://127.0.0.1:5000/action -d "title=XXX" -d "desc=YYY" -d "start=1-1-1900" -d "end=31-12-9999" -d "newTitle=xXxX" -d "newDesc=yYyY" -X PUT
+# curl http://127.0.0.1:5000/action -d "title=XXX" -d "desc=YYY" -d "newTitle=xXxX" -d "newDesc=yYyY" -X PUT
+# curl http://127.0.0.1:5000/action -d "start=1-1-1900" -d "end=31-12-9999" -d "newTitle=xXxX" -d "newDesc=yYyY" -X PUT
 
-'''PUT unit tests'''
-# Check for empty titles/descs in records
-# Reconrd cnt after update
-# Target records update sucess
+# curl http://127.0.0.1:5000/action -d "title=XXX" -d "desc=YYY" -d "start=1-1-1900" -d "end=31-12-9999" -d "newTitle=xXxX" -X PUT
+# curl http://127.0.0.1:5000/action -d "title=XXX" -d "desc=YYY" -d "newTitle=xXxX" -X PUT
+# curl http://127.0.0.1:5000/action -d "start=1-1-1900" -d "end=31-12-9999" -d "newTitle=xXxX" -X PUT
 
-"""DELETE"""
-# Selected records deleted
-# Non selected records are intact
+# curl http://127.0.0.1:5000/action -d "title=XXX" -d "desc=YYY" -d "start=1-1-1900" -d "end=31-12-9999" -d "newDesc=yYyY" -X PUT
+# curl http://127.0.0.1:5000/action -d "title=XXX" -d "desc=YYY" -d "newDesc=yYyY" -X PUT
+# curl http://127.0.0.1:5000/action -d "start=1-1-1900" -d "end=31-12-9999" -d "newDesc=yYyY" -X PUT
 
-'''Teardown'''
-# Save results
-# Tests residue cleanup
-# Dispose of resources
 
-# Make full use cases if time is left
+'''Usage - Diary Backup'''
+## GET - Save diary data to a local backup .json file
+## POST - Load data from local .json backup file to the programs diary data structure
+
+# curl http://127.0.0.1:5000/backup -X GET
+# curl http://127.0.0.1:5000/backup -X POST
