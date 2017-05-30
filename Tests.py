@@ -27,6 +27,7 @@ class SimpleHTTPDiary_Tests(unittest.TestCase):
             print "[TEST PASSED]\n"
         else:
             print "[TEST FAILED]\n"
+        print "=========================================================================================="
 
     ########################## Tests for adding new diary records functionality ##########################
     def test_addRecord_missing_date(self):
@@ -318,16 +319,26 @@ class SimpleHTTPDiary_Tests(unittest.TestCase):
         for rec in responseDecoded:
             try:
                 diaryIndex = SimpleHTTPDiary.diary.index(rec)
-                self.fail("Record was not deteted")
+                self.fail("Record was not deleted")
             except ValueError as ex:
                 print "{0}{1}".format("Record deleted: ", ex)
 
     ########################## Tests for saving diary backup ##########################
-    def test_saveRecordsBackup_xyz(self):
-        pass
-    ########################## Tests for loading diary from backup ##########################
-    def test_loadRecordsBackup_xyz(self):
-        pass
+    def test_saveRecordsBackup_Save_Load(self):
+        self.initAppData()
+        refString = json.dumps(SimpleHTTPDiary.diary, sort_keys=True)
+
+        response = self.app.get("/backup")
+        print "{0}{1}".format("'GET' RESULT:\n", response.data)
+        self.assertTrue("Backup saved" in response.data)
+
+        response = self.app.post("/backup")
+        print "{0}{1}".format("'POST' RESULT:\n", response.data)
+        self.assertTrue("Backup loaded" in response.data)
+
+        resString = json.dumps(SimpleHTTPDiary.diary, sort_keys=True)
+        print "Reference: {0}\n\nResult: {1}".format(refString, resString)
+        self.assertEqual(refString, resString)
 
 if __name__ == '__main__':
     unittest.main()

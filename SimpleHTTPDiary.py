@@ -10,7 +10,7 @@ app = Flask(__name__)
 api = Api(app)
 
 diary = list(dict())
-BACKUP_FILE = "./diaryBackup"
+BACKUP_FILE = "./diaryBackup.json"
 
 def Search(title = None, desc = None, start = None, end = None):
     if title is None and desc is None and start is None and end is None: # No-arguments check
@@ -147,9 +147,14 @@ class DiaryAction(Resource):
 class DiaryBackup(Resource):
     def get(self): # Save backup to file
         global diary
-        fp = open(BACKUP_FILE, "w")
-        json.dump(diary, fp)
-        fp.close()
+
+        try:
+            fp = open(BACKUP_FILE, "w")
+            json.dump(diary, fp, indent=4)
+            fp.close()
+        except IOError as ex:
+            return str(ex)
+
         return "Backup saved"
 
     def post(self): # Load backup from file
