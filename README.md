@@ -4,10 +4,10 @@ Simple diary API implementation through a HTTP local web server
 
 PREREQUISITES
 ------------------
-1) Install latest python interpreter version 2.7.x
-2) Install latest Flask compact web server (pip install flask)
-3) Install latest Flask-RESTful REST extension package (pip install flask-restful)
-
+1) Install latest python interpreter version 2.7.x (on linux system you might need install pip 'apt-get install python-pip')
+2) Install latest Flask compact web server 'pip install flask'
+3) Install latest Flask-RESTful REST extension package 'pip install flask-restful'
+4) Clone the git repo to local machine: git clone https://github.com/tzvikapika/SimpleHTTPDiary.git
 
 USAGE
 -----------
